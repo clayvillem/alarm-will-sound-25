@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b71e4b"/>
+      <stop offset="100%" stop-color="#e63946"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="#0a0a0a"/>
+  <text x="16" y="23" 
+        font-family="Arial Black, sans-serif" 
+        font-weight="900" 
+        font-size="14" 
+        fill="url(#brandGradient)" 
+        text-anchor="middle">AWS</text>
+</svg>
+

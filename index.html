@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alarm Will Sound - 25 Years</title>
+    <link rel="icon" type="image/svg+xml" href="public/favicon-a.svg">
+    <script src="https://cdn.jsdelivr.net/npm/animejs@latest/lib/anime.iife.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-dark: #0a0a0a;
+        --accent-red: #b71e4b;
+        --accent-gold: #fff54b;
+        --text-light: #e8e8e8;
+        --text-muted: #999;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Lato", sans-serif;
+        background: var(--primary-dark);
+        color: var(--text-light);
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      /* Noise texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.03;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        z-index: 1000;
+      }
+
+      header {
+        padding: 3rem 2rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(244, 162, 97, 0.2);
+        position: relative;
+      }
+
+      .header-content {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(3rem, 10vw, 7rem);
+        letter-spacing: 0.08em;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+        line-height: 0.9;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .header-logo {
+        max-width: min(600px, 90vw);
+        height: auto;
+        margin-bottom: 1rem;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .subtitle {
+        font-size: clamp(1.2rem, 3vw, 2rem);
+        font-weight: 300;
+        color: var(--accent-gold);
+        letter-spacing: 0.15em;
+        margin-bottom: 1rem;
+        overflow: hidden;
+      }
+
+      /* Split text word styling */
+      .subtitle [data-word] {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      
+      /* Node title split text styling */
+      .node-title [data-word] {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .anniversary-badge {
+        display: inline-block;
+        margin-top: 2rem;
+        position: relative;
+      }
+
+      .anniversary-badge svg {
+        width: clamp(280px, 50vw, 420px);
+        height: auto;
+        overflow: visible;
+      }
+
+      .anniversary-badge .badge-border {
+        fill: none;
+        stroke: var(--accent-red);
+        stroke-width: 3;
+      }
+
+      .anniversary-badge .badge-corner {
+        fill: none;
+        stroke: var(--accent-red);
+        stroke-width: 3;
+      }
+
+      .anniversary-badge .drawable-text {
+        fill: none;
+        stroke: var(--accent-red);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ============================================
+         VISUAL TIMELINE SCRUBBER (Anime.js inspired)
+         ============================================ */
+      .timeline-scrubber {
+        position: fixed;
+        right: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        opacity: 0;
+      }
+
+      .scrubber-track {
+        width: 4px;
+        height: 400px;
+        background: rgba(255, 245, 75, 0.15);
+        border-radius: 2px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .scrubber-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 0%;
+        background: linear-gradient(
+          to bottom,
+          var(--accent-gold),
+          var(--accent-red)
+        );
+        border-radius: 2px;
+        transition: height 0.1s ease-out;
+      }
+
+      .scrubber-thumb {
+        position: absolute;
+        left: 50%;
+        top: 0%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        background: var(--accent-gold);
+        border-radius: 50%;
+        border: 3px solid var(--primary-dark);
+        box-shadow: 0 0 15px rgba(255, 245, 75, 0.6);
+        cursor: grab;
+        transition: top 0.1s ease-out, transform 0.2s ease;
+      }
+
+      .scrubber-thumb:hover {
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+
+      .scrubber-thumb:active {
+        cursor: grabbing;
+      }
+
+      .scrubber-year-markers {
+        position: absolute;
+        left: -60px;
+        top: 0;
+        height: 100%;
+        width: 50px;
+        pointer-events: none;
+      }
+
+      .scrubber-year {
+        position: absolute;
+        right: 0;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        opacity: 0.5;
+        transform: translateY(-50%);
+        transition: all 0.3s ease;
+      }
+
+      .scrubber-year.active {
+        color: var(--accent-gold);
+        opacity: 1;
+        font-size: 0.9rem;
+      }
+
+      .scrubber-label {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: var(--text-muted);
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        margin-top: 15px;
+      }
+
+      /* Timeline blocks visual representation */
+      .scrubber-blocks {
+        position: absolute;
+        left: 20px;
+        top: 0;
+        height: 100%;
+        width: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        pointer-events: none;
+      }
+
+      .scrubber-block {
+        flex: 1;
+        background: rgba(183, 30, 75, 0.2);
+        border-radius: 2px;
+        opacity: 0.3;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .scrubber-block::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 0%;
+        background: var(--accent-red);
+        transition: height 0.3s ease;
+      }
+
+      .scrubber-block.passed::after {
+        height: 100%;
+      }
+
+      .scrubber-block.active {
+        opacity: 1;
+        background: rgba(183, 30, 75, 0.4);
+      }
+
+      .scrubber-block.active::after {
+        background: linear-gradient(
+          to bottom,
+          var(--accent-red),
+          var(--accent-gold)
+        );
+      }
+
+      .timeline-container {
+        position: relative;
+        max-width: 1400px;
+        margin: 4rem auto;
+        padding: 2rem;
+        padding-right: 100px; /* Make room for scrubber */
+      }
+
+      /* Central timeline spine */
+      .timeline-spine {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          var(--accent-gold) 10%,
+          var(--accent-gold) 90%,
+          transparent 100%
+        );
+        transform: translateX(-50%) scaleY(0);
+        transform-origin: top;
+      }
+
+      /* Timeline nodes container */
+      .timeline-events {
+        position: relative;
+        z-index: 1;
+      }
+
+      .timeline-node {
+        display: flex;
+        margin-bottom: 6rem;
+        position: relative;
+        opacity: 0;
+      }
+
+      .timeline-node:nth-child(even) {
+        flex-direction: row-reverse;
+      }
+
+      .timeline-node:nth-child(odd) .node-content {
+        text-align: left;
+        padding-left: 4rem;
+      }
+
+      .timeline-node:nth-child(even) .node-content {
+        text-align: right;
+        padding-right: 4rem;
+      }
+
+      .node-content {
+        flex: 1;
+        max-width: 45%;
+      }
+
+      .node-year {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 4rem;
+        color: var(--accent-red);
+        line-height: 1;
+        margin-bottom: 1rem;
+        letter-spacing: 0.05em;
+      }
+
+      /* Same-year grouping */
+      .timeline-node.same-year-group {
+        margin-top: -3rem;
+      }
+
+      .timeline-node.same-year-group .node-year {
+        display: none;
+      }
+
+      .node-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        color: var(--text-light);
+      }
+
+      .node-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: var(--text-muted);
+        font-weight: 300;
+      }
+
+      .node-description a {
+        color: var(--accent-gold);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 245, 75, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .node-description a:hover {
+        color: var(--text-light);
+        border-bottom-color: var(--accent-gold);
+      }
+
+      /* GRAMMY Win highlight */
+      .timeline-node.grammy-highlight .node-content {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(183, 30, 75, 0.06) 100%);
+        border: 1px solid rgba(255, 215, 0, 0.25);
+        border-radius: 8px;
+        padding: 2rem;
+        position: relative;
+      }
+
+      .timeline-node.grammy-highlight .node-title {
+        color: #ffd700;
+      }
+
+      .timeline-node.grammy-highlight .node-marker {
+        background: #ffd700;
+        width: 26px;
+        height: 26px;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 60px rgba(255, 215, 0, 0.3);
+      }
+
+      .timeline-node.grammy-highlight .node-marker::before {
+        width: 50px;
+        height: 50px;
+        border-color: #ffd700;
+        opacity: 0.5;
+        animation: grammy-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes grammy-pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+        50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.2; }
+      }
+
+      .node-image {
+        max-width: 200px;
+        height: auto;
+        margin-top: 1.5rem;
+        opacity: 1;
+      }
+
+      /* Align images based on which side the content is on */
+      /* Right side nodes - image aligns right */
+      .timeline-node:nth-child(even) .node-image {
+        margin-left: auto;
+      }
+
+      .node-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        filter: grayscale(20%);
+        transition: filter 0.3s ease;
+        cursor: pointer;
+        border: 2px solid rgba(244, 162, 97, 0.3);
+      }
+
+      .node-image img:hover {
+        filter: grayscale(0%);
+      }
+
+      /* Image Lightbox */
+      .image-lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .image-lightbox.active {
+        display: flex;
+      }
+
+      .image-lightbox img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        animation: lightboxZoomIn 0.3s ease;
+      }
+
+      @keyframes lightboxZoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 3rem;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: color 0.3s ease;
+      }
+
+      .lightbox-close:hover {
+        color: var(--accent-gold);
+      }
+
+      /* Video Lightbox */
+      .video-lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .video-lightbox.active {
+        display: flex;
+      }
+
+      .video-lightbox iframe,
+      .video-lightbox video {
+        max-width: 90vw;
+        max-height: 80vh;
+        width: 960px;
+        height: 540px;
+        animation: lightboxZoomIn 0.3s ease;
+      }
+
+      .video-lightbox video {
+        background: #000;
+      }
+
+      .video-lightbox .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 3rem;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: color 0.3s ease;
+        z-index: 10;
+      }
+
+      .video-lightbox .lightbox-close:hover {
+        color: var(--accent-gold);
+      }
+
+      /* Video thumbnail styling */
+      .node-video {
+        max-width: 200px;
+        height: auto;
+        margin-top: 1.5rem;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .timeline-node:nth-child(even) .node-video {
+        margin-left: auto;
+      }
+
+      .node-video .video-thumbnail {
+        width: 100%;
+        height: auto;
+        display: block;
+        filter: grayscale(20%);
+        transition: filter 0.3s ease;
+        border: 2px solid rgba(244, 162, 97, 0.3);
+      }
+
+      .node-video:hover .video-thumbnail {
+        filter: grayscale(0%);
+      }
+
+      .node-video .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(183, 30, 75, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(183, 30, 75, 0.5);
+      }
+
+      .node-video:hover .play-button {
+        background: var(--accent-red);
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 0 30px rgba(183, 30, 75, 0.8);
+      }
+
+      .node-video .play-button::after {
+        content: "";
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 0 10px 18px;
+        border-color: transparent transparent transparent white;
+        margin-left: 4px;
+      }
+
+      /* Local video thumbnail */
+      .node-video.local-video {
+        width: 200px;
+        height: 150px;
+        border: 2px solid rgba(244, 162, 97, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .node-video.local-video .video-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(20%);
+        transition: filter 0.3s ease;
+      }
+
+      .node-video.local-video:hover .video-preview {
+        filter: grayscale(0%);
+      }
+
+      /* Side-by-side images */
+      .node-images-row {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        max-width: 420px;
+      }
+
+      .timeline-node:nth-child(even) .node-images-row {
+        margin-left: auto;
+        justify-content: flex-end;
+      }
+
+      .node-images-row .node-image {
+        max-width: 200px;
+        margin-top: 0;
+        flex: 1;
+      }
+
+      /* Photo grid (2x2) */
+      .node-images-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        max-width: 320px;
+      }
+
+      .timeline-node:nth-child(even) .node-images-grid {
+        margin-left: auto;
+      }
+
+      .node-images-grid .node-image {
+        max-width: 100%;
+        margin-top: 0;
+      }
+
+      .node-images-grid .node-image img {
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+
+      /* Central dot marker */
+      .node-marker {
+        position: absolute;
+        left: 50%;
+        top: 2rem;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 20px;
+        background: var(--accent-gold);
+        border-radius: 50%;
+        border: 4px solid var(--primary-dark);
+        z-index: 2;
+        box-shadow: 0 0 20px rgba(244, 162, 97, 0.6);
+      }
+
+      .node-marker::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--accent-gold);
+        border-radius: 50%;
+        opacity: 0.3;
+      }
+
+      /* Placeholder content for demonstration */
+      .timeline-placeholder {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        font-style: italic;
+      }
+
+      footer {
+        text-align: center;
+        padding: 3rem 2rem;
+        border-top: 1px solid rgba(244, 162, 97, 0.2);
+        margin-top: 4rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        opacity: 0;
+      }
+
+      /* Gallery Navigation Link */
+      .gallery-link {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(183, 30, 75, 0.15);
+        border: 1px solid rgba(183, 30, 75, 0.4);
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--text-light);
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.15em;
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateX(20px);
+      }
+
+      .gallery-link:hover {
+        background: rgba(183, 30, 75, 0.3);
+        border-color: var(--accent-gold);
+        color: var(--accent-gold);
+        transform: translateX(0) scale(1.02);
+        box-shadow: 0 0 20px rgba(183, 30, 75, 0.3);
+      }
+
+      .gallery-link svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      @media (max-width: 768px) {
+        .gallery-link {
+          top: 1rem;
+          right: 1rem;
+          padding: 0.6rem 1rem;
+          font-size: 0.8rem;
+        }
+
+        .gallery-link span {
+          display: none;
+        }
+
+        header {
+          padding-top: 4rem;
+        }
+      }
+
+      /* Scroll indicator */
+      .scroll-indicator {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0;
+        z-index: 100;
+      }
+
+      .scroll-text {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.2em;
+        color: var(--text-muted);
+      }
+
+      .scroll-line {
+        width: 1px;
+        height: 40px;
+        background: var(--accent-gold);
+        transform: scaleY(0);
+        transform-origin: top;
+      }
+
+      @media (max-width: 1024px) {
+        .timeline-scrubber {
+          right: 15px;
+        }
+
+        .scrubber-track {
+          height: 300px;
+        }
+
+        .scrubber-year-markers {
+          display: none;
+        }
+
+        .scrubber-blocks {
+          display: none;
+        }
+
+        .timeline-container {
+          padding-right: 60px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .timeline-spine {
+          left: 2rem;
+        }
+
+        .timeline-node {
+          flex-direction: column !important;
+          padding-left: 4rem;
+        }
+
+        .timeline-node:nth-child(odd) .node-content,
+        .timeline-node:nth-child(even) .node-content {
+          text-align: left;
+          padding: 0;
+          max-width: 100%;
+        }
+
+        /* All images align left on mobile */
+        .timeline-node:nth-child(even) .node-image,
+        .timeline-node:nth-child(even) .node-images-row,
+        .timeline-node:nth-child(even) .node-images-grid,
+        .timeline-node:nth-child(even) .node-video,
+        .timeline-node:nth-child(even) .node-video.local-video {
+          margin-left: 0;
+        }
+
+        .node-marker {
+          left: 2rem;
+        }
+
+        .timeline-node.grammy-highlight .node-content {
+          padding: 1.2rem;
+        }
+
+        .node-year {
+          font-size: 3rem;
+        }
+
+        .timeline-node.same-year-group {
+          margin-top: -2rem;
+        }
+
+        .node-title {
+          font-size: 1.4rem;
+        }
+
+        .timeline-scrubber {
+          right: 10px;
+        }
+
+        .scrubber-track {
+          height: 200px;
+          width: 3px;
+        }
+
+        .scrubber-thumb {
+          width: 12px;
+          height: 12px;
+        }
+
+        .scrubber-label {
+          font-size: 0.6rem;
+        }
+
+        .timeline-container {
+          padding-right: 40px;
+        }
+      }
+
+      /* ============================================
+         GLITCH EFFECT FOR FUTURE EVENTS
+         ============================================ */
+      .glitched-event {
+        --glitch-intensity: 1;
+        position: relative;
+      }
+
+      .glitched-event .node-content {
+        animation: glitch-jitter calc(0.1s + var(--glitch-intensity) * 0.4s) steps(2) infinite;
+      }
+
+      .glitched-event .node-title,
+      .glitched-event .node-description {
+        position: relative;
+        filter: blur(calc(var(--glitch-intensity) * 3px));
+        animation: glitch-skew calc(0.5s + var(--glitch-intensity) * 1s) ease-in-out infinite alternate;
+      }
+
+      /* RGB split effect via text shadows */
+      .glitched-event .node-title {
+        text-shadow: 
+          calc(var(--glitch-intensity) * -3px) 0 var(--accent-red),
+          calc(var(--glitch-intensity) * 3px) 0 cyan;
+      }
+
+      /* Scan line overlay */
+      .glitched-event .node-content::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -10%;
+        width: 120%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent 0px,
+          transparent 2px,
+          rgba(0, 0, 0, calc(var(--glitch-intensity) * 0.3)) 2px,
+          rgba(0, 0, 0, calc(var(--glitch-intensity) * 0.3)) 4px
+        );
+        pointer-events: none;
+        animation: glitch-scan calc(3s - var(--glitch-intensity) * 2s) linear infinite;
+        z-index: 10;
+      }
+
+      /* Random horizontal slice displacement */
+      .glitched-event .node-content::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: inherit;
+        clip-path: polygon(
+          0 calc(var(--glitch-intensity) * 15%),
+          100% calc(var(--glitch-intensity) * 15%),
+          100% calc(var(--glitch-intensity) * 20%),
+          0 calc(var(--glitch-intensity) * 20%)
+        );
+        transform: translateX(calc(var(--glitch-intensity) * 10px));
+        opacity: calc(var(--glitch-intensity) * 0.8);
+        pointer-events: none;
+        animation: glitch-slice 2s steps(3) infinite;
+      }
+
+      @keyframes glitch-jitter {
+        0%, 100% { transform: translate(0); }
+        20% { transform: translate(calc(var(--glitch-intensity) * -2px), calc(var(--glitch-intensity) * 1px)); }
+        40% { transform: translate(calc(var(--glitch-intensity) * 2px), calc(var(--glitch-intensity) * -1px)); }
+        60% { transform: translate(calc(var(--glitch-intensity) * -1px), calc(var(--glitch-intensity) * 2px)); }
+        80% { transform: translate(calc(var(--glitch-intensity) * 1px), calc(var(--glitch-intensity) * -2px)); }
+      }
+
+      @keyframes glitch-skew {
+        0% { transform: skewX(calc(var(--glitch-intensity) * -1deg)); }
+        100% { transform: skewX(calc(var(--glitch-intensity) * 1deg)); }
+      }
+
+      @keyframes glitch-scan {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+      }
+
+      @keyframes glitch-slice {
+        0% { clip-path: polygon(0 15%, 100% 15%, 100% 20%, 0 20%); }
+        33% { clip-path: polygon(0 45%, 100% 45%, 100% 55%, 0 55%); }
+        66% { clip-path: polygon(0 75%, 100% 75%, 100% 82%, 0 82%); }
+        100% { clip-path: polygon(0 30%, 100% 30%, 100% 35%, 0 35%); }
+      }
+
+      /* "Coming Soon" badge overlay */
+      .glitched-event .reveal-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: var(--accent-red);
+        color: var(--text-light);
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        padding: 0.3rem 0.8rem;
+        opacity: var(--glitch-intensity);
+        z-index: 20;
+      }
+
+      /* When fully revealed, remove all effects */
+      .glitched-event.revealed {
+        --glitch-intensity: 0;
+      }
+
+      .glitched-event.revealed .node-content::before,
+      .glitched-event.revealed .node-content::after {
+        display: none;
+      }
+
+      .glitched-event.revealed .reveal-badge {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Gallery Link -->
+    <a href="gallery.html" class="gallery-link">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      <span>GALLERY</span>
+    </a>
+
+    <header>
+      <div class="header-content">
+        <img 
+          src="public/Logo-Alarm-Will-Sound_Logo-Red-01.png" 
+          alt="Alarm Will Sound" 
+          class="header-logo"
+        />
+        <div class="subtitle">A Journey Through Sound</div>
+        <div class="anniversary-badge">
+          <svg viewBox="0 0 230 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Border rectangle -->
+            <rect class="badge-border" x="10" y="10" width="210" height="80" rx="0"/>
+            
+            <!-- Corner decorations -->
+            <path class="badge-corner" d="M0 20 L0 0 L20 0"/>
+            <path class="badge-corner" d="M210 0 L230 0 L230 20"/>
+            <path class="badge-corner" d="M230 80 L230 100 L210 100"/>
+            <path class="badge-corner" d="M20 100 L0 100 L0 80"/>
+            
+            <!-- "25 YEARS" text as drawable paths -->
+            <!-- Number 2 -->
+            <path class="drawable-text" d="M30 32 Q30 25 42 25 Q54 25 54 35 Q54 42 42 52 L30 65 L54 65"/>
+            
+            <!-- Number 5 -->
+            <path class="drawable-text" d="M72 25 L60 25 L60 42 Q60 42 66 42 Q78 42 78 53 Q78 65 66 65 Q60 65 60 60"/>
+            
+            <!-- Letter Y -->
+            <path class="drawable-text" d="M95 25 L103 42 L111 25 M103 42 L103 65"/>
+            
+            <!-- Letter E -->
+            <path class="drawable-text" d="M132 25 L120 25 L120 65 L132 65 M120 45 L130 45"/>
+            
+            <!-- Letter A -->
+            <path class="drawable-text" d="M140 65 L150 25 L160 65 M144 52 L156 52"/>
+            
+            <!-- Letter R -->
+            <path class="drawable-text" d="M168 65 L168 25 L182 25 Q188 25 188 35 Q188 45 178 45 L168 45 M178 45 L188 65"/>
+            
+            <!-- Letter S -->
+            <path class="drawable-text" d="M208 32 Q208 25 200 25 Q192 25 192 35 Q192 45 200 45 Q210 45 210 55 Q210 65 200 65 Q192 65 192 58"/>
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Vertical Timeline Scrubber (Anime.js inspired) -->
+    <div class="timeline-scrubber" id="timelineScrubber">
+      <div class="scrubber-year-markers" id="scrubberYears"></div>
+      <div class="scrubber-track" id="scrubberTrack">
+        <div class="scrubber-progress" id="scrubberProgress"></div>
+        <div class="scrubber-thumb" id="scrubberThumb"></div>
+      </div>
+      <div class="scrubber-blocks" id="scrubberBlocks"></div>
+      <div class="scrubber-label">TIMELINE</div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline-spine"></div>
+
+      <div class="timeline-events">
+        <!-- Timeline Event - Proto AWS -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">1999</div>
+            <h3 class="node-title">Proto-Alarm Will Sound</h3>
+            <p class="node-description">
+              February - A <a href="https://www.esm.rochester.edu/ensembles/musicanova/" target="_blank" rel="noopener">Musica Nova</a>/<a href="https://www.esm.rochester.edu/ensembles/ossia/" target="_blank" rel="noopener">OSSIA</a> concert at the Eastman School of Music featured music by Steve Reich. Alan Pierson conducted without a score, and afterward Reich suggested that Alan form a sinfonietta like those in Europe such as the London Sinfonietta, Ensemble Modern, or Ensemble Intercontemporain. The seed of Alarm Will Sound was planted.
+            </p>
+            <div class="node-video local-video" data-video-src="public/video/1999 02 19—Ossia-Musica Nova Reich portrait part 1 [Tehillim] - Clip.mp4">
+              <video class="video-preview" muted preload="metadata" src="public/video/1999 02 19—Ossia-Musica Nova Reich portrait part 1 [Tehillim] - Clip.mp4#t=5"></video>
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 1 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2001</div>
+            <h3 class="node-title">The Beginning</h3>
+            <p class="node-description">
+              May 24 - Alarm Will Sound debuts at Miller Theatre in NYC,
+              performing works by Steve Reich with <a href="https://www.esm.rochester.edu/ensembles/ossia/" target="_blank" rel="noopener">OSSIA</a>. The journey begins.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWS2001.png"
+                alt="Alarm Will Sound ensemble members in 2001"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 2 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2002</div>
+            <h3 class="node-title">
+              NYC Premiere of Ligeti's Hamburg Concerto
+            </h3>
+            <p class="node-description">
+              March - A concert of works by György Ligeti, including the Piano
+              Concerto and the New York premiere of the Hamburg Concerto.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Steve Reich Album -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2002</div>
+            <h3 class="node-title">Steve Reich: Tehillim / The Desert Music</h3>
+            <p class="node-description">
+              September - Alarm Will Sound and Ossia's recording of two landmark
+              Reich works, conducted by Alan Pierson. A document of the ensemble's
+              deep connection to the composer who inspired their formation.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/SteveReich.jpg"
+                alt="Steve Reich: Tehillim / The Desert Music album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - 2003 Season -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2003</div>
+            <h3 class="node-title">Building Momentum</h3>
+            <p class="node-description">
+              A banner year for the young ensemble: AWS opens its Miller Theatre 
+              season with works by Michael Gordon, Conlon Nancarrow, Benedict Mason, 
+              John Adams, and György Ligeti. In September, strings and winds join 
+              veteran Reich performers at Zankel Hall at Carnegie under David Robertson 
+              for Tehillim. December brings a Harrison Birtwistle Portrait concert 
+              including the US premiere of Theseus Games, followed by an appearance 
+              on John Schaefer's New Sounds Live featuring Aaron Jay Kernis's Toy 
+              Piano Concerto with Margaret Leng Tan.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 2 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2004</div>
+            <h3 class="node-title">
+              Artists-in-Residence at Dickinson College
+            </h3>
+            <p class="node-description">
+              Alarm Will Sound begins a three-year residency at Dickinson
+              College, expanding their educational mission and artistic reach.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSatDickinson.jpg"
+                alt="Alarm Will Sound at Dickinson College"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 3 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2005</div>
+            <h3 class="node-title">Acoustica Released</h3>
+            <p class="node-description">
+              July - Acoustica: Alarm Will Sound Performs Aphex Twin is
+              released, bringing electronic music pioneer Aphex Twin's work to
+              acoustic instruments in a groundbreaking album. Named a New York 
+              Times Album of the Year.
+            </p>
+            <div class="node-image">
+              <img src="public/albums/Acoustica.jpg" alt="Acoustica" />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 4 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2006</div>
+            <h3 class="node-title">ASCAP Concert Music Award</h3>
+            <p class="node-description">
+              Recognized by ASCAP for "the virtuosity, passion and commitment
+              with which they perform and champion the repertory for the 21st
+              century."
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Odd Couples at Carnegie Hall -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2006</div>
+            <h3 class="node-title">Odd Couples at Carnegie Hall</h3>
+            <p class="node-description">
+              At Zankel Hall, AWS presented "Odd Couples," a program covering 
+              vast stylistic ground with elaborately choreographed performances. 
+              For Zappa's "Dog Breath Variations/Uncle Meat," musicians milled 
+              around onstage like a jam band; for Varèse's "Intégrales," 
+              percussionists moved forward and back while winds played en route 
+              through the hall, with Alan Pierson conducting from the middle of 
+              the audience. The program also featured the premiere of Wolfgang 
+              Rihm's "Will Sound" and Caleb Burhans's arrangement of John Adams's 
+              "Coast."
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 5 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2006</div>
+            <h3 class="node-title">Reich at the Roxy</h3>
+            <p class="node-description">
+              CD/DVD release on Sweetspot Music captures the energy and
+              precision of Steve Reich's minimalist masterworks in performance.
+            </p>
+            <div class="node-video local-video" data-video-src="public/video/Reich at the Roxy Clip.mp4">
+              <video class="video-preview" muted preload="metadata" src="public/video/Reich at the Roxy Clip.mp4#t=5"></video>
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 4 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2007</div>
+            <h3 class="node-title">Michael Gordon: Van Gogh</h3>
+            <p class="node-description">
+              Released on Cantaloupe Music, this album showcases Michael
+              Gordon's vivid compositional voice.
+            </p>
+            <div class="node-image">
+              <img src="public/albums/VanGogh.jpg" alt="Van Gogh album cover" />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Russia Tour -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2008</div>
+            <h3 class="node-title">Russia Tour</h3>
+            <p class="node-description">
+              November - Alarm Will Sound performs in Moscow and St. Petersburg,
+              bringing their innovative programming to Russian audiences.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 5 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2009</div>
+            <h3 class="node-title">a/rhythmia</h3>
+            <p class="node-description">
+              Released on Nonesuch Records, exploring intricate rhythmic
+              territories and contemporary soundscapes.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/arhythmia.jpg"
+                alt="Alarm Will Sound ensemble members in 2001"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 6 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2010</div>
+            <h3 class="node-title">The Getty Address</h3>
+            <p class="node-description">
+              Collaboration with Dirty Projectors debuts at Lincoln Center,
+              Disney Hall, and the Barbican Centre—a groundbreaking fusion of
+              indie rock and contemporary classical.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSDPDisney.jpeg"
+                alt="Dirty Projectors with Alarm Will Sound at Disney Hall"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Mizzou Residency -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2010</div>
+            <h3 class="node-title">Mizzou International Composers Festival</h3>
+            <p class="node-description">
+              AWS begins its residency at the MICF, a partnership that continues to this day. Over the
+              years, the ensemble has premiered over a hundred works and
+              collaborated with as many composers at the festival.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSMizzou.jpg"
+                alt="Alarm Will Sound at Mizzou"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 9 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2011</div>
+            <h3 class="node-title">1969 at Carnegie Hall</h3>
+            <p class="node-description">
+              A multimedia event exploring John Lennon, Karlheinz Stockhausen,
+              Luciano Berio, and Leonard Bernstein. The New York Times calls it
+              "a swirling, heady meditation... a consistent wonder."
+            </p>
+            <div class="node-video" data-video-id="eOR4oHz-sYw">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/eOR4oHz-sYw/hqdefault.jpg"
+                alt="1969 at Carnegie Hall - Watch Video"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - European Festivals -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2011</div>
+            <h3 class="node-title">European Festivals</h3>
+            <p class="node-description">
+              Alarm Will Sound expands their international reach with performances
+              at the TransArt Festival in Bolzano, Italy and Sacrum Profanum
+              in Kraków, Poland.
+            </p>
+            <div class="node-images-row">
+              <div class="node-image">
+                <img
+                  src="public/AWSinItaly.JPG"
+                  alt="Alarm Will Sound at TransArt Festival in Italy"
+                />
+              </div>
+              <div class="node-image">
+                <img
+                  src="public/AWSSacrumProfanum.jpg"
+                  alt="Alarm Will Sound at Sacrum Profanum in Kraków, Poland"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 10 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2012</div>
+            <h3 class="node-title">Derek Bermel: Canzonas Americanas</h3>
+            <p class="node-description">
+              Cantaloupe Music releases this celebration of Derek Bermel's
+              distinctive fusion of classical and vernacular traditions.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/Canzonas Americanas.jpg"
+                alt="Canzonas Americanas album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 11 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2013</div>
+            <h3 class="node-title">St. Louis Season Begins</h3>
+            <p class="node-description">
+              AWS launches their St. Louis Season to grow a local audience for
+              contemporary performing arts, presenting at The Sheldon, Touhill,
+              and The Pageant.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 12 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2013</div>
+            <h3 class="node-title">Metropolitan Museum of Art Residency</h3>
+            <p class="node-description">
+              AWS becomes artists-in-residence at The Met, presenting "The
+              Permanent Collection," "Twinned," "All Steve Reich," and the opera
+              "I Was Here I Was I" at the Temple of Dendur.
+            </p>
+            <div class="node-video" data-video-id="DGZb9Be24i0">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/DGZb9Be24i0/hqdefault.jpg"
+                alt="Metropolitan Museum of Art Residency - Watch Video"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Radio Rewrite US Premiere -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2013</div>
+            <h3 class="node-title">Radio Rewrite US Premiere</h3>
+            <p class="node-description">
+              October - Alarm Will Sound gives the US premiere of Steve Reich's 
+              Radio Rewrite at Stanford's Bing Concert Hall. The work, inspired 
+              by Radiohead songs and written for London Sinfonietta and Alarm 
+              Will Sound, marked another milestone in the ensemble's long 
+              relationship with the composer.
+            </p>
+            <div class="node-video" data-video-id="siUQp11u8tE">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/siUQp11u8tE/hqdefault.jpg"
+                alt="Radio Rewrite US Premiere - Watch Video"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 13 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2014</div>
+            <h3 class="node-title">Alarm System Launches</h3>
+            <p class="node-description">
+              A new program bringing musical artists from diverse backgrounds
+              together with AWS to create new work, featuring collaborations
+              with Medeski Martin & Wood and others.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 14 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2014</div>
+            <h3 class="node-title">Radio Rewrite</h3>
+            <p class="node-description">
+              Nonesuch Records releases this album featuring Jonny Greenwood
+              performing Electric Counterpoint and Vicky Chow performing Piano
+              Counterpoint.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/RadioRewrite.jpg"
+                alt="Radio Rewrite album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 15 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2015</div>
+            <h3 class="node-title">Performing with Björk</h3>
+            <p class="node-description">
+              March - AWS performs with Björk at Carnegie Hall to kick off her
+              Vulnicura world tour, bridging contemporary classical and
+              experimental pop.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Korea -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2015</div>
+            <h3 class="node-title">Right Now Music Festival, Seoul</h3>
+            <p class="node-description">
+              April - Alarm Will Sound headlines the inaugural Right Now Music 
+              festival in Seoul, Korea, performing at the historic Culture 
+              Station Seoul 284. The two-day art house music marathon introduced 
+              contemporary classical music to Korean audiences.
+            </p>
+            <div class="node-video local-video" data-video-src="public/video/DowlandinKorea.mp4">
+              <video class="video-preview" muted preload="metadata" src="public/video/DowlandinKorea.mp4#t=5"></video>
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 16 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2016</div>
+            <h3 class="node-title">Modernists</h3>
+            <p class="node-description">
+              Released on Cantaloupe Music, a bold exploration of contemporary
+              classical aesthetics.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/Modernists.jpg"
+                alt="Modernists album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Splitting Adams -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2017</div>
+            <h3 class="node-title">Splitting Adams</h3>
+            <p class="node-description">
+              Conceived with Q2 Music's Peabody Award-winning podcast Meet the
+              Composer, this tribute to John Adams features Chamber Symphony and
+              Son of Chamber Symphony with commentary from host Nadia Sirota,
+              Alan Pierson, and the composer himself.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/SplittingAdams.jpg"
+                alt="Splitting Adams album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 17 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2018</div>
+            <h3 class="node-title">In Memory of Matt Marks</h3>
+            <p class="node-description">
+              May 11 - The ensemble mourns the loss of member Matt Marks, a
+              talented horn, keyboard, and electronics performer who was
+              integral to the group's sound.
+            </p>
+            <div class="node-images-grid">
+              <div class="node-image">
+                <img src="public/Matt Marks/Matt1.jpg" alt="Matt Marks" />
+              </div>
+              <div class="node-image">
+                <img src="public/Matt Marks/Matt2.jpg" alt="Matt Marks" />
+              </div>
+              <div class="node-image">
+                <img src="public/Matt Marks/Matt3.jpg" alt="Matt Marks" />
+              </div>
+              <div class="node-image">
+                <img src="public/Matt Marks/Matt4.jpg" alt="Matt Marks" />
+              </div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Matt Marks Impact Fund -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2018</div>
+            <h3 class="node-title">Matt Marks Impact Fund</h3>
+            <p class="node-description">
+              Established to honor Matt's legacy, the fund provides up to $7,500
+              in seed money for ambitious projects that push Alarm Will Sound
+              and classical music to be more innovative, diverse, and inclusive.
+              Recipients have included Alyssa Pyper, Allison Loggins-Hull &
+              Toshi Reagon, Damon Davis, Caroline Louise Miller, and others.
+            </p>
+            <div class="node-video" data-video-id="EkVwwqQtzh8">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/EkVwwqQtzh8/hqdefault.jpg"
+                alt="Matt Marks Impact Fund - Watch Video"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 18 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2018</div>
+            <h3 class="node-title">Omnisphere</h3>
+            <p class="node-description">
+              Collaboration with Medeski Martin & Wood, released on Indirecto
+              Records, bridging contemporary classical and jazz worlds.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/Omnisphere.jpg"
+                alt="Omnisphere album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Mind Out of Matter -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2018</div>
+            <h3 class="node-title">Mind Out of Matter</h3>
+            <p class="node-description">
+              Scott Johnson's "atheist oratorio" featuring philosopher Daniel
+              Dennett's voice examining religion as a natural phenomenon. The
+              Boston Globe called it "a tour de force on the idea of ideas."
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/MindOutOfMatter.jpg"
+                alt="Mind Out of Matter album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - China Tour -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2018</div>
+            <h3 class="node-title">China Tour</h3>
+            <p class="node-description">
+              Alarm Will Sound performs in Beijing at the Beijing Modern
+              Festival and in Nanning, bringing their music to Chinese
+              audiences.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSinChina.jpg"
+                alt="Alarm Will Sound in China"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 19 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2019</div>
+            <h3 class="node-title">The Hunger</h3>
+            <p class="node-description">
+              Donnacha Dennehy's powerful work featuring Katherine Manley and
+              Iarla Ó Lionáird, released on Nonesuch Records.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/The Hunger.jpg"
+                alt="The Hunger album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 20 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2020</div>
+            <h3 class="node-title">Video Chat Variations</h3>
+            <p class="node-description">
+              During the pandemic, AWS innovates with remote recording
+              technology, culminating in a series featuring new works by
+              Meredith Monk, Tyshawn Sorey, John Fitz Rogers, Jlin, and Daniel
+              Neumann.
+            </p>
+            <div class="node-video" data-video-id="8STIzX5NagA" data-playlist-id="PLCYhk5fLVO340qbz_mtdZe1yGogFD8WIY">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/8STIzX5NagA/hqdefault.jpg"
+                alt="Video Chat Variations - Watch Playlist"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Ten Thousand Screens -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2020</div>
+            <h3 class="node-title">Ten Thousand Screens</h3>
+            <p class="node-description">
+              Alan Pierson's innovative reimagining of John Luther Adams's "Ten
+              Thousand Birds," filmed in a single take across 27 screens
+              throughout his apartment. Each musician plays the song of a bird
+              native to New York City, offering an intimate glimpse into the
+              city during a time of crisis.
+            </p>
+            <div class="node-video" data-video-id="NEsxKxGSkg4">
+              <img
+                class="video-thumbnail"
+                src="https://img.youtube.com/vi/NEsxKxGSkg4/hqdefault.jpg"
+                alt="Ten Thousand Screens - Watch Video"
+              />
+              <div class="play-button"></div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 21 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2021</div>
+            <h3 class="node-title">For George Lewis / Autoschediasms</h3>
+            <p class="node-description">
+              Featuring composer Tyshawn Sorey, released on Cantaloupe Music. A
+              testament to creative collaboration and improvisation. The albums 
+              received widespread acclaim, appearing on NPR's Top Ten Songs of 2021, 
+              The New York Times' 25 Best Classical Music Tracks of 2021, and 
+              The New Yorker's Notable Recordings of 2021.
+            </p>
+            <div class="node-images-row">
+              <div class="node-image">
+                <img
+                  src="public/albums/cover [Autoschediasms].jpg"
+                  alt="Autoschediasms album cover"
+                />
+              </div>
+              <div class="node-image">
+                <img
+                  src="public/albums/cover [For George Lewis].jpg"
+                  alt="For George Lewis album cover"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Ten Thousand Birds at the Armory -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2022</div>
+            <h3 class="node-title">Ten Thousand Birds at the Armory</h3>
+            <p class="node-description">
+              April - Alarm Will Sound presents John Luther Adams's immersive 
+              Ten Thousand Birds at Park Avenue Armory's vast Wade Thompson 
+              Drill Hall. With musicians and audience scattered across the 
+              55,000-square-foot space, the performance created a sonic 
+              environment where birdsong surrounded listeners from every direction.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSTKBArmory.jpg"
+                alt="Ten Thousand Birds at Park Avenue Armory"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Paper Pianos -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2023</div>
+            <h3 class="node-title">Paper Pianos</h3>
+            <p class="node-description">
+              February - AWS premieres Paper Pianos at EMPAC, an evening-length 
+              multimedia work exploring the dislocation, longing, and optimism of 
+              refugees. Composed by Mary Kouyoumdjian with text and staging by 
+              Nigel Maister and animations by Kevork Mourad, the piece takes its 
+              name from Afghan pianist Milad Yousufi, who painted piano keys on 
+              paper to teach himself in silence under the Taliban's threat.
+            </p>
+            <div class="node-image">
+              <img
+                src="public/AWSEMPAC.png"
+                alt="Paper Pianos at EMPAC"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 22 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2024</div>
+            <h3 class="node-title">Land of Winter</h3>
+            <p class="node-description">
+              November - Donnacha Dennehy's masterful large-scale work exploring
+              the cyclical interplay of time, light, and nature across twelve
+              movements. Released on Nonesuch Records, it captures the arc of
+              light through the Irish year. Michael Brodeur of the Washington Post calls it "one of
+              my favorite recordings of the year."
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/LandofWinter.jpg"
+                alt="Land of Winter album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event 23 -->
+        <div class="timeline-node">
+          <div class="node-content">
+            <div class="node-year">2025</div>
+            <h3 class="node-title">GRAMMY® Nominations</h3>
+            <p class="node-description">
+              Land of Winter receives two GRAMMY® nominations for the 2026
+              awards: Best Chamber Music/Small Ensemble Performance and Best
+              Contemporary Classical Composition.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - GRAMMY Win -->
+        <div class="timeline-node grammy-highlight">
+          <div class="node-content">
+            <div class="node-year">2026</div>
+            <h3 class="node-title">GRAMMY® Award Winner</h3>
+            <p class="node-description">
+              February - Alarm Will Sound wins the GRAMMY® for Best Chamber
+              Music/Small Ensemble Performance for <em>Land of Winter</em>, Donnacha
+              Dennehy's large-scale work exploring the cyclical interplay of time,
+              light, and nature across twelve movements. A crowning achievement
+              celebrating 25 years of musical innovation.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - Lift Album -->
+        <div class="timeline-node glitched-event">
+          <div class="node-content">
+            <div class="reveal-badge">COMING SOON</div>
+            <div class="node-year">2026</div>
+            <h3 class="node-title">Lift</h3>
+            <p class="node-description">
+              March - For 25 years, Alarm Will Sound's own composers have energized the
+              ensemble's music-making—writing original pieces, arranging music they love,
+              and playing alongside the group's other performers. Each track on <em>Lift</em>
+              tells the story of creating new music together: the virtuosity of Caleb Burhans'
+              intricate rhythms; the drive of cutting-edge electronica and experimental
+              acoustic sound in John Orfe's and Stefan Freund's pieces; Stefan's reworking
+              of Matt Marks' music; Gavin Chuck's arrangement of The Shaggs and Jason Price's
+              arrangement of Boards of Canada; Matt Marks' theatrical setting of Royce Vavrek's
+              libretto; and Daniel Neumann's captured resonance of an empty hall. Making new
+              music together, from blank page to lit stage, our efforts continue to lift each
+              other up, and raise the bar of the musically possible.
+              <a href="https://alarmwillsound.bandcamp.com/album/lift" target="_blank" rel="noopener noreferrer">Listen on Bandcamp</a>
+            </p>
+            <div class="node-image">
+              <img
+                src="public/albums/Lift_Cover1.3.1.png"
+                alt="Lift album cover"
+              />
+            </div>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+
+        <!-- Timeline Event - 25th Anniversary Concerts (Glitched) -->
+        <div class="timeline-node glitched-event">
+          <div class="node-content">
+            <div class="reveal-badge">COMING SOON</div>
+            <div class="node-year">2026</div>
+            <h3 class="node-title">25th Anniversary Concerts</h3>
+            <p class="node-description">
+              Alarm Will Sound celebrates 25 years of musical innovation
+              with two special anniversary concerts:
+              <a href="https://www.alarmwillsound.com/events/25th-anniversary-concert/" target="_blank" rel="noopener noreferrer">May 5 at The Grandel in St. Louis</a> and
+              <a href="https://www.alarmwillsound.com/events/25th-anniversary-concert-2/" target="_blank" rel="noopener noreferrer">May 7 at Roulette in Brooklyn</a>.
+              A celebration and a living portrait of an ensemble still evolving—honoring
+              the past, fully present in the moment, and leaning into the future with
+              curiosity and conviction.
+            </p>
+          </div>
+          <div class="node-marker"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="scroll-text">SCROLL</div>
+      <div class="scroll-line"></div>
+    </div>
+
+    <footer>
+      <p>
+        &copy; 2024 Alarm Will Sound. Celebrating 25 Years of Musical
+        Innovation.
+      </p>
+    </footer>
+
+    <script>
+      // ============================================
+      // VERTICAL TIMELINE SCRUBBER (Anime.js powered)
+      // ============================================
+
+      class TimelineScrubber {
+        constructor() {
+          this.scrubber = document.getElementById("timelineScrubber");
+          this.track = document.getElementById("scrubberTrack");
+          this.progress = document.getElementById("scrubberProgress");
+          this.thumb = document.getElementById("scrubberThumb");
+          this.yearsContainer = document.getElementById("scrubberYears");
+          this.blocksContainer = document.getElementById("scrubberBlocks");
+
+          this.nodes = document.querySelectorAll(".timeline-node");
+          this.years = [];
+          this.nodePositions = [];
+          this.isDragging = false;
+          this.currentActiveIndex = -1;
+
+          this.init();
+        }
+
+        init() {
+          // Extract years from nodes
+          this.nodes.forEach((node, index) => {
+            const yearEl = node.querySelector(".node-year");
+            if (yearEl) {
+              this.years.push(yearEl.textContent.trim());
+            }
+          });
+
+          // Create year markers
+          this.createYearMarkers();
+
+          // Create block indicators
+          this.createBlockIndicators();
+
+          // Calculate node positions
+          this.calculateNodePositions();
+
+          // Setup scroll handler
+          this.setupScrollHandler();
+
+          // Setup drag interaction
+          this.setupDragInteraction();
+
+          // Animate scrubber entrance
+          this.animateEntrance();
+
+          // Handle resize
+          window.addEventListener("resize", () => {
+            this.calculateNodePositions();
+          });
+        }
+
+        createYearMarkers() {
+          // Show key years spread across the timeline
+          const uniqueYears = [...new Set(this.years)];
+          const keyYears = [
+            uniqueYears[0],
+            uniqueYears[Math.floor(uniqueYears.length / 2)],
+            uniqueYears[uniqueYears.length - 1],
+          ];
+
+          keyYears.forEach((year, index) => {
+            const marker = document.createElement("div");
+            marker.className = "scrubber-year";
+            marker.textContent = year;
+            marker.style.top = `${(index / (keyYears.length - 1)) * 100}%`;
+            marker.dataset.year = year;
+            this.yearsContainer.appendChild(marker);
+          });
+        }
+
+        createBlockIndicators() {
+          this.nodes.forEach((node, index) => {
+            const block = document.createElement("div");
+            block.className = "scrubber-block";
+            block.dataset.index = index;
+            this.blocksContainer.appendChild(block);
+          });
+        }
+
+        calculateNodePositions() {
+          this.nodePositions = [];
+          const scrollHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
+
+          this.nodes.forEach((node) => {
+            const rect = node.getBoundingClientRect();
+            const absoluteTop = rect.top + window.scrollY;
+            const progress = absoluteTop / scrollHeight;
+            this.nodePositions.push(Math.min(Math.max(progress, 0), 1));
+          });
+        }
+
+        setupScrollHandler() {
+          let ticking = false;
+
+          window.addEventListener("scroll", () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                this.updateScrubberPosition();
+                ticking = false;
+              });
+              ticking = true;
+            }
+          });
+        }
+
+        updateScrubberPosition() {
+          const scrollTop = window.scrollY;
+          const scrollHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
+          const progress =
+            Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100;
+
+          // Update progress bar and thumb
+          this.progress.style.height = `${progress}%`;
+          this.thumb.style.top = `${progress}%`;
+
+          // Find current active node
+          let activeIndex = -1;
+          this.nodes.forEach((node, index) => {
+            const rect = node.getBoundingClientRect();
+            const nodeCenter = rect.top + rect.height / 2;
+
+            if (
+              nodeCenter < window.innerHeight * 0.6 &&
+              nodeCenter > -rect.height / 2
+            ) {
+              activeIndex = index;
+            }
+          });
+
+          // Update block indicators
+          const blocks =
+            this.blocksContainer.querySelectorAll(".scrubber-block");
+          blocks.forEach((block, index) => {
+            block.classList.remove("active", "passed");
+            if (index < activeIndex) {
+              block.classList.add("passed");
+            } else if (index === activeIndex) {
+              block.classList.add("active");
+            }
+          });
+
+          // Animate year markers
+          if (activeIndex !== this.currentActiveIndex && activeIndex >= 0) {
+            this.currentActiveIndex = activeIndex;
+            this.animateYearChange(activeIndex);
+          }
+
+          // Update year marker highlights
+          const yearMarkers =
+            this.yearsContainer.querySelectorAll(".scrubber-year");
+          yearMarkers.forEach((marker) => {
+            const markerYear = marker.dataset.year;
+            const currentYear = this.years[activeIndex];
+            marker.classList.toggle("active", markerYear === currentYear);
+          });
+        }
+
+        animateYearChange(index) {
+          const { animate } = anime;
+          
+          // Pulse animation on the thumb when passing a node
+          animate(this.thumb, {
+            scale: [1, 1.5, 1],
+            boxShadow: [
+              "0 0 15px rgba(255, 245, 75, 0.6)",
+              "0 0 30px rgba(255, 245, 75, 1)",
+              "0 0 15px rgba(255, 245, 75, 0.6)",
+            ],
+            duration: 400,
+            ease: 'outElastic(1, 0.5)',
+          });
+
+          // Animate the active block
+          const blocks =
+            this.blocksContainer.querySelectorAll(".scrubber-block");
+          if (blocks[index]) {
+            animate(blocks[index], {
+              scale: [1, 1.1, 1],
+              duration: 300,
+              ease: 'outQuad',
+            });
+          }
+        }
+
+        setupDragInteraction() {
+          let startY = 0;
+          let startProgress = 0;
+
+          const onMouseDown = (e) => {
+            this.isDragging = true;
+            startY = e.clientY || e.touches?.[0]?.clientY || 0;
+            startProgress = parseFloat(this.thumb.style.top) || 0;
+            this.thumb.style.cursor = "grabbing";
+            document.body.style.userSelect = "none";
+          };
+
+          const onMouseMove = (e) => {
+            if (!this.isDragging) return;
+
+            const currentY = e.clientY || e.touches?.[0]?.clientY || 0;
+            const trackRect = this.track.getBoundingClientRect();
+            const relativeY = currentY - trackRect.top;
+            const progress = Math.min(
+              Math.max((relativeY / trackRect.height) * 100, 0),
+              100
+            );
+
+            // Update visual position immediately
+            this.progress.style.height = `${progress}%`;
+            this.thumb.style.top = `${progress}%`;
+
+            // Scroll to corresponding position
+            const scrollHeight =
+              document.documentElement.scrollHeight - window.innerHeight;
+            const scrollTarget = (progress / 100) * scrollHeight;
+
+            window.scrollTo({
+              top: scrollTarget,
+              behavior: "auto",
+            });
+          };
+
+          const onMouseUp = () => {
+            this.isDragging = false;
+            this.thumb.style.cursor = "grab";
+            document.body.style.userSelect = "";
+          };
+
+          // Mouse events
+          this.thumb.addEventListener("mousedown", onMouseDown);
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+
+          // Touch events
+          this.thumb.addEventListener("touchstart", onMouseDown, {
+            passive: true,
+          });
+          document.addEventListener("touchmove", onMouseMove, {
+            passive: true,
+          });
+          document.addEventListener("touchend", onMouseUp);
+
+          // Click on track to jump
+          this.track.addEventListener("click", (e) => {
+            if (e.target === this.thumb) return;
+
+            const trackRect = this.track.getBoundingClientRect();
+            const relativeY = e.clientY - trackRect.top;
+            const progress = Math.min(
+              Math.max(relativeY / trackRect.height, 0),
+              1
+            );
+
+            const scrollHeight =
+              document.documentElement.scrollHeight - window.innerHeight;
+            const scrollTarget = progress * scrollHeight;
+
+            // Animate scroll using smooth behavior
+            window.scrollTo({
+              top: scrollTarget,
+              behavior: 'smooth'
+            });
+          });
+        }
+
+        animateEntrance() {
+          const { animate, stagger } = anime;
+          
+          // Animate scrubber entrance
+          animate(this.scrubber, {
+            opacity: [0, 1],
+            translateX: [30, 0],
+            duration: 800,
+            delay: 1500,
+            ease: 'outExpo',
+          });
+          
+          animate('.scrubber-block', {
+            opacity: [0, 0.3],
+            translateX: [10, 0],
+            delay: stagger(50, { start: 1700 }),
+            duration: 400,
+            ease: 'outExpo',
+          });
+          
+          animate('.scrubber-year', {
+            opacity: [0, 0.5],
+            translateX: [10, 0],
+            delay: stagger(100, { start: 1800 }),
+            duration: 400,
+            ease: 'outExpo',
+          });
+        }
+      }
+
+      // ============================================
+      // TIME-BASED GLITCH REVEAL SYSTEM
+      // ============================================
+
+      class GlitchReveal {
+        constructor(options = {}) {
+          // The date when content becomes fully revealed
+          this.revealDate = options.revealDate || new Date('2026-01-14T00:00:00');
+          // How many days before reveal date to start reducing the glitch
+          this.transitionDays = options.transitionDays || 30;
+          // Characters used for text scrambling
+          this.glitchChars = '!<>-_\\/[]{}—=+*^?#________';
+          
+          this.glitchedElements = document.querySelectorAll('.glitched-event');
+          
+          if (this.glitchedElements.length > 0) {
+            this.init();
+          }
+        }
+        
+        init() {
+          this.initTextScramble();
+          this.updateGlitchIntensity();
+          
+          // Update text scramble animation every 100ms for dynamic effect
+          this.scrambleInterval = setInterval(() => {
+            const intensity = this.calculateIntensity();
+            if (intensity > 0) {
+              this.updateScrambledText(intensity);
+            }
+          }, 100);
+          
+          // Update intensity every minute to catch date changes
+          setInterval(() => this.updateGlitchIntensity(), 60000);
+        }
+        
+        calculateIntensity() {
+          const now = new Date();
+          const msUntilReveal = this.revealDate - now;
+          const daysUntilReveal = msUntilReveal / (1000 * 60 * 60 * 24);
+          
+          // If past reveal date, no glitch
+          if (daysUntilReveal <= 0) return 0;
+          
+          // If more than transitionDays away, full glitch
+          if (daysUntilReveal >= this.transitionDays) return 1;
+          
+          // Linear interpolation from 1 to 0 over transition period
+          return daysUntilReveal / this.transitionDays;
+        }
+        
+        updateGlitchIntensity() {
+          const intensity = this.calculateIntensity();
+          
+          this.glitchedElements.forEach(el => {
+            el.style.setProperty('--glitch-intensity', intensity);
+            
+            if (intensity === 0) {
+              el.classList.add('revealed');
+              // Restore original text when fully revealed
+              this.restoreOriginalText(el);
+            } else {
+              el.classList.remove('revealed');
+            }
+          });
+          
+          // Update scrambled text based on intensity
+          if (intensity > 0) {
+            this.updateScrambledText(intensity);
+          }
+        }
+        
+        initTextScramble() {
+          this.glitchedElements.forEach(el => {
+            const title = el.querySelector('.node-title');
+            const desc = el.querySelector('.node-description');
+            
+            if (title) {
+              title.dataset.originalText = title.textContent;
+            }
+            if (desc) {
+              desc.dataset.originalText = desc.textContent;
+            }
+          });
+        }
+        
+        restoreOriginalText(el) {
+          const title = el.querySelector('.node-title');
+          const desc = el.querySelector('.node-description');
+          
+          if (title && title.dataset.originalText) {
+            title.textContent = title.dataset.originalText;
+          }
+          if (desc && desc.dataset.originalText) {
+            desc.textContent = desc.dataset.originalText;
+          }
+        }
+        
+        updateScrambledText(intensity) {
+          this.glitchedElements.forEach(el => {
+            if (el.classList.contains('revealed')) return;
+            
+            const title = el.querySelector('.node-title');
+            const desc = el.querySelector('.node-description');
+            
+            if (title && title.dataset.originalText) {
+              title.textContent = this.scrambleText(title.dataset.originalText, intensity);
+            }
+            if (desc && desc.dataset.originalText) {
+              desc.textContent = this.scrambleText(desc.dataset.originalText, intensity);
+            }
+          });
+        }
+        
+        scrambleText(original, intensity) {
+          if (intensity === 0) return original;
+          
+          return original.split('').map((char, i) => {
+            // Keep spaces and punctuation mostly intact
+            if (char === ' ') return ' ';
+            if (char === '.' || char === ',') return char;
+            
+            // Use seeded randomness based on char position for consistency
+            const seed = Math.sin(i * 9999) * 10000;
+            const threshold = (seed - Math.floor(seed));
+            
+            // More characters revealed as intensity decreases
+            if (threshold > intensity) {
+              return char;
+            }
+            
+            // Replace with random glitch character (using time for animation)
+            const glitchIndex = Math.floor(Math.abs(Math.sin(Date.now() * 0.01 + i * 0.5)) * this.glitchChars.length);
+            return this.glitchChars[glitchIndex];
+          }).join('');
+        }
+      }
+
+      // Animation timeline
+      const initAnimations = () => {
+        // Access anime.js v4 utilities
+        const { animate, createTimeline, stagger, text } = anime;
+
+        // Split the subtitle text into words
+        const subtitleSplit = text.split('.subtitle', {
+          words: { wrap: 'span' }
+        });
+
+        // Header animations - staggered entrance
+        // First animate logo
+        animate('.header-logo', {
+          opacity: [0, 1],
+          translateY: [30, 0],
+          duration: 1200,
+          ease: 'outExpo'
+        });
+
+        // Then animate split words with staggered delay
+        animate(subtitleSplit.words, {
+          opacity: [0, 1],
+          translateY: ['100%', '0%'],
+          duration: 800,
+          delay: stagger(100, { start: 600 }),
+          ease: 'outExpo'
+        });
+
+        // Anniversary badge animation using createDrawable
+        const { svg } = anime;
+        
+        // Make the badge visible first
+        animate('.anniversary-badge', {
+          opacity: [0, 1],
+          duration: 400,
+          delay: 900,
+          ease: 'outQuad'
+        });
+        
+        // Create drawables from all the SVG paths
+        const drawables = svg.createDrawable('.anniversary-badge .drawable-text, .anniversary-badge .badge-border, .anniversary-badge .badge-corner');
+        
+        // Animate the text drawing
+        animate(drawables, {
+          draw: ['0 0', '0 1'],
+          ease: 'outQuad',
+          duration: 1500,
+          delay: anime.stagger(80, { start: 1000 })
+        });
+
+        // Timeline spine growth
+        animate('.timeline-spine', {
+          scaleY: [0, 1],
+          duration: 2000,
+          ease: 'inOutQuad',
+          delay: 800,
+        });
+
+        // Scroll indicator
+        animate('.scroll-indicator', {
+          opacity: [0, 1],
+          translateY: [-20, 0],
+          duration: 800,
+          delay: 1500,
+          ease: 'outQuad',
+        });
+
+        animate('.scroll-line', {
+          scaleY: [0, 1],
+          duration: 1000,
+          delay: 1700,
+          ease: 'outQuad',
+        });
+
+        // Pulsing scroll line animation (loop)
+        animate('.scroll-line', {
+          opacity: [1, 0.3, 1],
+          duration: 2000,
+          ease: 'inOutSine',
+          loop: true,
+          delay: 2500,
+        });
+
+        // Footer fade in
+        animate('footer', {
+          opacity: [0, 1],
+          duration: 1000,
+          delay: 2000,
+          ease: 'outQuad',
+        });
+
+        // Gallery link entrance
+        animate('.gallery-link', {
+          opacity: [0, 1],
+          translateX: [20, 0],
+          duration: 800,
+          delay: 1200,
+          ease: 'outExpo',
+        });
+      };
+
+      // Function to animate timeline nodes when they come into view
+      const observeTimelineNodes = () => {
+        const { animate, stagger, text } = anime;
+        const nodes = document.querySelectorAll(".timeline-node");
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const node = entry.target;
+                
+                // Animate the node container
+                animate(node, {
+                  opacity: [0, 1],
+                  translateX: [50, 0],
+                  duration: 1000,
+                  ease: 'outExpo',
+                });
+
+                // Split and animate the title with words
+                const title = node.querySelector('.node-title');
+                if (title && !title.dataset.split) {
+                  title.dataset.split = 'true';
+                  const titleSplit = text.split(title, {
+                    words: { wrap: 'span' }
+                  });
+                  
+                  animate(titleSplit.words, {
+                    opacity: [0, 1],
+                    translateY: [30, 0],
+                    duration: 600,
+                    delay: stagger(60, { start: 200 }),
+                    ease: 'outExpo'
+                  });
+                }
+
+                // Animate marker pulse
+                const marker = node.querySelector(".node-marker");
+                if (marker) {
+                  animate(marker, {
+                    scale: [0, 1],
+                    duration: 600,
+                    ease: 'outElastic(1, .6)',
+                    delay: 200,
+                  });
+                }
+
+                observer.unobserve(node);
+              }
+            });
+          },
+          {
+            threshold: 0.2,
+            rootMargin: "0px 0px -100px 0px",
+          }
+        );
+
+        nodes.forEach((node) => observer.observe(node));
+      };
+
+      // Group events that happen in the same year
+      const groupSameYearEvents = () => {
+        const nodes = document.querySelectorAll(".timeline-node");
+        let previousYear = null;
+
+        nodes.forEach((node) => {
+          const yearEl = node.querySelector(".node-year");
+          if (yearEl) {
+            const currentYear = yearEl.textContent.trim();
+            if (currentYear === previousYear) {
+              node.classList.add("same-year-group");
+            }
+            previousYear = currentYear;
+          }
+        });
+      };
+
+      // Initialize on load
+      window.addEventListener("DOMContentLoaded", () => {
+        groupSameYearEvents();
+        initAnimations();
+        observeTimelineNodes();
+
+        // Initialize the vertical timeline scrubber
+        new TimelineScrubber();
+
+        // Initialize the glitch reveal system
+        // Will fully reveal on January 14, 2026
+        // Transition starts 30 days before (Dec 15, 2025)
+        new GlitchReveal({
+          revealDate: new Date('2026-01-14T00:00:00'),
+          transitionDays: 30
+        });
+      });
+
+      // Function to add timeline events dynamically
+      // This will be used when you add the actual events
+      function addTimelineEvent(year, title, description, side = "auto") {
+        const container = document.querySelector(".timeline-events");
+        const placeholder = document.querySelector(".timeline-placeholder");
+
+        // Remove placeholder on first event
+        if (placeholder) {
+          placeholder.remove();
+        }
+
+        const node = document.createElement("div");
+        node.className = "timeline-node";
+
+        node.innerHTML = `
+                <div class="node-content">
+                    <div class="node-year">${year}</div>
+                    <h3 class="node-title">${title}</h3>
+                    <p class="node-description">${description}</p>
+                </div>
+                <div class="node-marker"></div>
+            `;
+
+        container.appendChild(node);
+
+        // Re-observe new nodes
+        observeTimelineNodes();
+      }
+
+      // Example of how to use the addTimelineEvent function:
+      // addTimelineEvent('2000', 'Event Title', 'Event description goes here...');
+
+      // Image Lightbox functionality
+      const lightbox = document.createElement("div");
+      lightbox.className = "image-lightbox";
+      lightbox.innerHTML = `
+        <span class="lightbox-close">&times;</span>
+        <img src="" alt="Enlarged image">
+      `;
+      document.body.appendChild(lightbox);
+
+      const lightboxImg = lightbox.querySelector("img");
+      const lightboxClose = lightbox.querySelector(".lightbox-close");
+
+      // Open lightbox when clicking on node images
+      document.querySelectorAll(".node-image img").forEach((img) => {
+        img.addEventListener("click", () => {
+          lightboxImg.src = img.src;
+          lightboxImg.alt = img.alt;
+          lightbox.classList.add("active");
+          document.body.style.overflow = "hidden";
+        });
+      });
+
+      // Close lightbox
+      function closeLightbox() {
+        lightbox.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+
+      lightbox.addEventListener("click", closeLightbox);
+      lightboxClose.addEventListener("click", closeLightbox);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLightbox();
+      });
+
+      // Video Lightbox functionality
+      const videoLightbox = document.createElement("div");
+      videoLightbox.className = "video-lightbox";
+      videoLightbox.innerHTML = `
+        <span class="lightbox-close">&times;</span>
+        <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <video controls></video>
+      `;
+      document.body.appendChild(videoLightbox);
+
+      const videoIframe = videoLightbox.querySelector("iframe");
+      const videoElement = videoLightbox.querySelector("video");
+      const videoLightboxClose = videoLightbox.querySelector(".lightbox-close");
+
+      // Open video lightbox when clicking on video thumbnails
+      document.querySelectorAll(".node-video").forEach((video) => {
+        video.addEventListener("click", () => {
+          const videoId = video.dataset.videoId;
+          const videoSrc = video.dataset.videoSrc;
+          
+          if (videoSrc) {
+            // Local video file
+            videoIframe.style.display = "none";
+            videoElement.style.display = "block";
+            videoElement.src = videoSrc;
+            videoElement.play();
+          } else if (videoId) {
+            // YouTube video
+            videoElement.style.display = "none";
+            videoIframe.style.display = "block";
+            const playlistId = video.dataset.playlistId;
+            let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            if (playlistId) {
+              embedUrl += `&list=${playlistId}`;
+            }
+            videoIframe.src = embedUrl;
+          }
+          
+          videoLightbox.classList.add("active");
+          document.body.style.overflow = "hidden";
+        });
+      });
+
+      // Close video lightbox
+      function closeVideoLightbox() {
+        videoLightbox.classList.remove("active");
+        videoIframe.src = ""; // Stop video playback
+        document.body.style.overflow = "";
+      }
+
+      videoLightbox.addEventListener("click", (e) => {
+        if (e.target === videoLightbox || e.target === videoLightboxClose) {
+          closeVideoLightbox();
+        }
+      });
+      videoLightboxClose.addEventListener("click", closeVideoLightbox);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeVideoLightbox();
+      });
+    </script>
+  </body>
+</html>

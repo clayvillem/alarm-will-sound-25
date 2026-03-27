@@ -1,0 +1,24 @@
+{
+  "name": "alarm-will-sound-25",
+  "version": "1.0.0",
+  "description": "Alarm Will Sound 25th Anniversary Timeline",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve",
+    "build:gallery": "node build-gallery.js"
+  },
+  "keywords": [
+    "html",
+    "css",
+    "anime.js"
+  ],
+  "author": "Alarm Will Sound",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "11.2.0",
+    "sharp": "^0.33.2"
+  },
+  "notes": {
+    "animations": "Using anime.js v4 via CDN (https://cdn.jsdelivr.net/npm/animejs@latest) for text splitting animations"
+  }
+}
